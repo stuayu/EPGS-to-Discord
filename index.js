@@ -32,14 +32,14 @@ const webhook = new Discord.WebhookClient(webhookURL[5],webhookURL[6]) //Discord
 
 var getRecorded = (recordedId, callback)=>{
     // 録画IDを用いてEPGStation API経由で録画番組情報を取得する
-    // EPGStation側のポートを変更している場合は8888を適宜環境に合わせて変更
+    // EPGStation側のポートを変更している場合は 8888 を適宜環境に合わせて変更
     request.get(_hostName+":8888/api/recorded/"+recordedId, (err, res, body)=>{
         !err ? callback(body): callback(err)
     })
 }
 var getProgram = (programlId, callback)=>{
     // 番組IDを用いてMirakurun API経由で番組情報を取得する
-    // Mirakurun側のポートを変更している場合は40772を適宜環境に合わせて変更
+    // Mirakurun側のポートを変更している場合は 40772 を適宜環境に合わせて変更
     request.get(_hostName+":40772/api/programs/"+programlId, (err, res, body)=>{
         !err ? callback(body): callback(err)
     })
@@ -62,16 +62,16 @@ var postMessage = (message)=>{
 
 if(process.argv[2] === 'start'){
     // 録画開始時に投稿するメッセージ
-    postMessage(':arrow_forward: __**'+_title+'**__\n```'+_startAt+'～'+_endAt+'［'+_channel+'］```')
+    postMessage(':record_button: __**'+_title+'**__\n```'+_startAt+'～'+_endAt+'［'+_channel+'］```')
 }
 else if(process.argv[2] === 'end'){
     // 録画終了時に投稿するメッセージ
-    mes = ":pause_button: "+' __**'+_title+'**__\n```'+_startAt+'～'+_endAt+'［'+_channel+'］\n'
+    mes = ":stop_button: "+' __**'+_title+'**__\n```'+_startAt+'～'+_endAt+'［'+_channel+'］\n'
     dropCheck((err, drop, scr)=>{
         if(err==-1) mes += "!===== Cannot load recorded file! =====!```" // 実行結果がnullの場合
         else if(err!='0'){
             // 映像PIDのd値（ドロップ値）が0でない場合≒ドロップがある場合は詳細を投稿（メンション付き）
-            mes += "!===== This MEPG-TS has dropped frame! =====!\n"
+            mes += "!===== This MPEG-TS has dropped frame! =====!\n"
             mes += 'Error:     '+err+'\nDrop:      '+drop+'\nScrmbling: '+scr+'```\@everyone'
         } else {
             // 映像PIDのd値が0の場合はドロップがないのでその旨を投稿
