@@ -32,12 +32,14 @@ const webhook = new Discord.WebhookClient(webhookURL[5],webhookURL[6]) //Discord
 
 var getRecorded = (recordedId, callback)=>{
     // 録画IDを用いてEPGStation API経由で録画番組情報を取得する
+    // EPGStation側のポートを変更している場合は 8888 を適宜環境に合わせて変更
     request.get(_hostName+":8888/api/recorded/"+recordedId, (err, res, body)=>{
         !err ? callback(body): callback(err)
     })
 }
 var getProgram = (programlId, callback)=>{
     // 番組IDを用いてMirakurun API経由で番組情報を取得する
+    // Mirakurun側のポートを変更している場合は 40772 を適宜環境に合わせて変更
     request.get(_hostName+":40772/api/programs/"+programlId, (err, res, body)=>{
         !err ? callback(body): callback(err)
     })
