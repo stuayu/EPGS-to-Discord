@@ -1,6 +1,6 @@
 # EPGS-to-Discord
 
-[Mirakurun](https://github.com/Chinachu/Mirakurun) を使用した録画管理ソフト [EPGStation](https://github.com/l3tnun/EPGStation)のログを
+[Mirakurun](https://github.com/Chinachu/Mirakurun) を使用した録画管理ソフト [EPGStation](https://github.com/l3tnun/EPGStation) のログを
 Webhook を使用して Discord上に通知するスクリプトです。
 [advancedbear氏の作成されたもの](https://github.com/advancedbear/EPGS-to-Discord) に微少の説明の追加, メッセージの変更のみ行ったものです。
 
