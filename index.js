@@ -25,9 +25,9 @@ try {
     console.error("config.json not found!")
     process.exit()
 }
-const M_host = _config.mirakurun_host // EPGStationの動作するホストアドレス
+const M_host = _config.mirakurun_host // Mirakurunの動作するホストアドレス
 const E_host = _config.epgstation_host // EPGStationの動作するホストアドレス
-const M_hostName = "http://"+M_host
+const M_hostName = "http://"+M_host 
 const E_hostName = !_config.basicId ? "http://"+E_host : "http://"+_config.basicId+':'+_config.basicPass+'@'+E_host //動作ホストのアドレス（BASIC認証対応）
 const webhookURL = _config.webhookURL.split('/') // DiscordのWebhookアドレス
 const webhook = new Discord.WebhookClient(webhookURL[5],webhookURL[6]) //Discord Webhookの初期化
