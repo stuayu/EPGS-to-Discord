@@ -1,5 +1,6 @@
 {
-    "host":"127.0.0.1",
+    "mirakurun_host":"127.0.0.1:40772/",
+    "epgstation_host":"127.0.0.1:8888/",
     "basicId":null,
     "basicPass":null,
     "webhookURL":"https://discordapp.com/api/webhooks/*********/*********"

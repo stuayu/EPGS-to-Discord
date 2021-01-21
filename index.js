@@ -25,22 +25,24 @@ try {
     console.error("config.json not found!")
     process.exit()
 }
-const _host = _config.host // EPGStationの動作するホストアドレス
-const _hostName = !_config.basicId ? "http://"+_host : "http://"+_config.basicId+':'+_config.basicPass+'@'+_host //動作ホストのアドレス（BASIC認証対応）
+const M_host = _config.mirakurun_host // EPGStationの動作するホストアドレス
+const E_host = _config.epgstation_host // EPGStationの動作するホストアドレス
+const M_hostName = "http://"+M_host
+const E_hostName = !_config.basicId ? "http://"+E_host : "http://"+_config.basicId+':'+_config.basicPass+'@'+E_host //動作ホストのアドレス（BASIC認証対応）
 const webhookURL = _config.webhookURL.split('/') // DiscordのWebhookアドレス
 const webhook = new Discord.WebhookClient(webhookURL[5],webhookURL[6]) //Discord Webhookの初期化
 
 var getRecorded = (recordedId, callback)=>{
     // 録画IDを用いてEPGStation API経由で録画番組情報を取得する
     // EPGStation側のポートを変更している場合は 8888 を適宜環境に合わせて変更
-    request.get(_hostName+":8888/api/recorded/"+recordedId, (err, res, body)=>{
+    request.get(E_hostName+"api/recorded/"+recordedId, (err, res, body)=>{
         !err ? callback(body): callback(err)
     })
 }
 var getProgram = (programlId, callback)=>{
     // 番組IDを用いてMirakurun API経由で番組情報を取得する
     // Mirakurun側のポートを変更している場合は 40772 を適宜環境に合わせて変更
-    request.get(_hostName+":40772/api/programs/"+programlId, (err, res, body)=>{
+    request.get(M_hostName+"api/programs/"+programlId, (err, res, body)=>{
         !err ? callback(body): callback(err)
     })
 }
