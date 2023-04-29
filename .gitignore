@@ -3,3 +3,4 @@ config.json
 tsselect.exe
 tsselect
 dropcheck.log
+*.yaml

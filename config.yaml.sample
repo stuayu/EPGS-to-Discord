@@ -1,0 +1,9 @@
+data:
+    epgstation_url: "http://localhost:8888/"
+    use_client:
+        # 使わないものは # でコメントアウトしてください
+        - discord
+        #- misskey
+    discord_webhookURL: ""
+    misskey_api_address: "https://misskey.io/api/" # APIまでのパス
+    misskey_token: ""

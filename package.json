@@ -4,6 +4,8 @@
   "description": "Post information of EPGStation to Discord channel.",
   "main": "index.js",
   "scripts": {
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,8 +19,14 @@
   },
   "homepage": "https://github.com/advancedbear/EPGS-to-Discord#readme",
   "dependencies": {
+    "axios": "^1.4.0",
     "discord.js": "^11.3.2",
-    "iconv-lite": "^0.4.23",
-    "request": "^2.87.0"
+    "js-yaml": "^4.1.0",
+    "log4js": "^6.9.1",
+    "typescript": "^5.0.4"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.5",
+    "@types/node": "^18.16.3"
   }
 }
