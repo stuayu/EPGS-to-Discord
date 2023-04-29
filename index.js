@@ -60,14 +60,18 @@ const misskey_api_address = _config.data.misskey_api_address;
 // 録画結果を返却
 function getRecorded(recordedId) {
     return __awaiter(this, void 0, void 0, function* () {
-        const data = yield axios_1.default.get(`${E_hostName}/api/recorded/${recordedId.toString()}?isHalfWidth=true`);
+        logger.debug('before getRecorded');
+        const data = yield axios_1.default.get(`${E_hostName}api/recorded/${recordedId.toString()}?isHalfWidth=true`);
+        logger.debug('after getRecorded');
         return data;
     });
 }
 // DropCheckの結果を返却
 function dropCheck(recordedId) {
     return __awaiter(this, void 0, void 0, function* () {
+        logger.debug('before func dropcheck');
         const droplog = yield getRecorded(recordedId);
+        logger.debug('after func dropcheck');
         return [droplog.data.dropLogFile.errorCnt, droplog.data.dropLogFile.dropCnt, droplog.data.dropLogFile.scramblingCnt];
     });
 }
@@ -76,8 +80,10 @@ function sendMessage(client_type, arg) {
         let msg;
         let end = '';
         if (arg == 'end') {
+            logger.debug('before dropcheck');
             const res = yield dropCheck(_recordedid);
-            end = '\nError:     ' + res[0] + '\nDrop:      ' + res[1] + '\nScrmbling: ' + res[2];
+            logger.info('DropCheck:' + res);
+            end = 'Error:' + res[0] + ' Drop:' + res[1] + ' Scrmbling:' + res[2];
         }
         switch (client_type) {
             case 'discord':
@@ -92,7 +98,7 @@ function sendMessage(client_type, arg) {
                     break;
                 }
                 logger.info(msg);
-                const res = yield axios_1.default.post(`${misskey_api_address}notes/create`, {
+                yield axios_1.default.post(`${misskey_api_address}notes/create`, {
                     i: misskey_token,
                     visibility: 'public',
                     visibleUserIds: [],
@@ -102,7 +108,6 @@ function sendMessage(client_type, arg) {
                     noExtractHashtags: false,
                     noExtractEmojis: false,
                 });
-                logger.info(res);
                 break;
             default:
                 msg = "";
@@ -112,11 +117,10 @@ function sendMessage(client_type, arg) {
 }
 function main(arg) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log("start main function");
-        console.log(_config.data.use_client);
+        logger.info('arg:' + arg);
         if (arg != null) {
             for (let val of _config.data.use_client) {
-                console.log(val);
+                logger.info(val);
                 yield sendMessage(val, arg);
             }
         }
@@ -134,6 +138,7 @@ const end_discord = ':white_large_square: 録画終了 ' + ' __**' + _title + '*
 function select_discord_Message(check) {
     return __awaiter(this, void 0, void 0, function* () {
         let msg;
+        logger.info(check);
         switch (check) {
             case 'start':
                 msg = start_discord;
@@ -174,8 +179,8 @@ const start_misskey = ':rec: 録画開始 **' + _title + '**\n' + _startAt + '�
 // const deleted_misskey = ':wastebasket: 録画予約削除 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
 // const prestart_misskey = ':briefcase: 録画実行準備 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
 // const prepfailed_misskey = ':warning: 録画実行準備に失敗 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
-// const recfailed_misskey = ':warning: 録画失敗 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
-const end_misskey = '⏹ 録画終了 ' + ' **' + _title + '**\n' + _startAt + '～' + _endAt + '［' + _channel + '］\n\n#anime #録画 #epgstation';
+const recfailed_misskey = '⚠️ 録画失敗 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
+const end_misskey = '⏹ 録画終了 ' + ' **' + _title + '**\n' + _startAt + '～' + _endAt + '［' + _channel + '］\n\n';
 function select_misskey_Message(check) {
     return __awaiter(this, void 0, void 0, function* () {
         let msg = '';
@@ -199,7 +204,7 @@ function select_misskey_Message(check) {
                 // msg = prepfailed_misskey;
                 break;
             case 'recfailed':
-                // msg = recfailed_misskey;
+                msg = recfailed_misskey;
                 break;
             case 'end':
                 msg = end_misskey;

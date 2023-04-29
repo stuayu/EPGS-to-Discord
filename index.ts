@@ -49,14 +49,18 @@ const misskey_token = _config.data.misskey_token; // misskeyのトークン
 const misskey_api_address = _config.data.misskey_api_address;
 
 // 録画結果を返却
-async function getRecorded(recordedId:number) {
-    const data = await axios.get(`${E_hostName}/api/recorded/${recordedId.toString()}?isHalfWidth=true`);
+async function getRecorded(recordedId: number) {
+    logger.debug('before getRecorded');
+    const data = await axios.get(`${E_hostName}api/recorded/${recordedId.toString()}?isHalfWidth=true`);
+    logger.debug('after getRecorded');
     return data;
 }
 
 // DropCheckの結果を返却
-async function dropCheck(recordedId:number) {
+async function dropCheck(recordedId: number) {
+    logger.debug('before func dropcheck');
     const droplog = await getRecorded(recordedId);
+    logger.debug('after func dropcheck');
     return [droplog.data.dropLogFile.errorCnt, droplog.data.dropLogFile.dropCnt, droplog.data.dropLogFile.scramblingCnt]
 }
 
@@ -64,8 +68,10 @@ async function sendMessage(client_type: string, arg: string) {
     let msg: string;
     let end = '';
     if (arg == 'end') {
+        logger.debug('before dropcheck');
         const res = await dropCheck(_recordedid);
-        end = '\nError:     '+res[0]+'\nDrop:      '+res[1]+'\nScrmbling: '+res[2]
+        logger.info('DropCheck:'+res);
+        end = 'Error:'+res[0]+' Drop:'+res[1]+' Scrmbling:'+res[2]
     }
     switch (client_type) {
         case 'discord':
@@ -81,7 +87,7 @@ async function sendMessage(client_type: string, arg: string) {
                 break;
             }
             logger.info(msg);
-            const res = await axios.post(`${misskey_api_address}notes/create`,{
+            await axios.post(`${misskey_api_address}notes/create`,{
                 i: misskey_token,
                 visibility: 'public',
                 visibleUserIds: [],
@@ -103,12 +109,11 @@ async function sendMessage(client_type: string, arg: string) {
 }
 
 async function main(arg: string | undefined) {
-    console.log("start main function")
-    console.log(_config.data.use_client)
+    logger.info('arg:' + arg);
     if (arg != null) {
         for (let val of _config.data.use_client) {
-            console.log(val)
-            await sendMessage(val,arg)
+            logger.info(val);
+            await sendMessage(val, arg);
         }
     }
 }
@@ -125,7 +130,7 @@ const end_discord = ':white_large_square: 録画終了 ' + ' __**' + _title + '*
 
 async function select_discord_Message(check: string) {
     let msg: string;
-    
+    logger.info(check);
     switch (check) {
         case 'start':
             msg = start_discord;
@@ -174,7 +179,7 @@ const start_misskey = ':rec: 録画開始 **' + _title + '**\n'+ _startAt + '～
 // const deleted_misskey = ':wastebasket: 録画予約削除 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
 // const prestart_misskey = ':briefcase: 録画実行準備 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
 // const prepfailed_misskey = ':warning: 録画実行準備に失敗 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
-// const recfailed_misskey = ':warning: 録画失敗 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
+const recfailed_misskey = '⚠️ 録画失敗 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
 const end_misskey = '⏹ 録画終了 ' + ' **' + _title + '**\n' + _startAt + '～' + _endAt + '［' + _channel + '］\n\n';
 
 async function select_misskey_Message(check: string) {
@@ -206,7 +211,7 @@ async function select_misskey_Message(check: string) {
             break;
         
         case 'recfailed':
-            // msg = recfailed_misskey;
+            msg = recfailed_misskey;
             break;
         
         case 'end':
