@@ -100,7 +100,7 @@ function sendMessage(client_type, arg) {
                 logger.info(msg);
                 yield axios_1.default.post(`${misskey_api_address}notes/create`, {
                     i: misskey_token,
-                    visibility: 'public',
+                    visibility: String(_config.data.miisskey_note),
                     visibleUserIds: [],
                     text: msg,
                     localOnly: false,
@@ -173,14 +173,14 @@ function select_discord_Message(check) {
 }
 /*************  Discord送信用メッセージの定義 ************/
 /*************  Misskey送信用メッセージの定義 ************/
-const start_misskey = ':rec: 録画開始 **' + _title + '**\n' + _startAt + '～' + _endAt + '［' + _channel + '］\n\n#anime #録画 #epgstation';
+const start_misskey = ':rec: 録画開始 **' + _title + '**\n' + _startAt + '～' + _endAt + '［' + _channel + '］\n\n' + String(_config.data.miisskey_hashtag);
 // const reserve_misskey = '✅ 予約追加 **' + _title + '** \n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］ \n'+ _description + '\n';
 // const update_misskey = ':large_orange_diamond: 録画予約更新 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
 // const deleted_misskey = ':wastebasket: 録画予約削除 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
 // const prestart_misskey = ':briefcase: 録画実行準備 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
 // const prepfailed_misskey = ':warning: 録画実行準備に失敗 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
-const recfailed_misskey = '⚠️ 録画失敗 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
-const end_misskey = '⏹ 録画終了 ' + ' **' + _title + '**\n' + _startAt + '～' + _endAt + '［' + _channel + '］\n\n';
+const recfailed_misskey = '⚠️ 録画失敗 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '\n\n' + String(_config.data.miisskey_hashtag);
+const end_misskey = '⏹ 録画終了 ' + ' **' + _title + '**\n' + _startAt + '～' + _endAt + '［' + _channel + '］\n\n' + String(_config.data.miisskey_hashtag);
 function select_misskey_Message(check) {
     return __awaiter(this, void 0, void 0, function* () {
         let msg = '';
