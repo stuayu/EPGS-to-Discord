@@ -47,6 +47,8 @@ const webhookURL = _config.data.discord_webhookURL.split('/'); // DiscordのWebh
 const webhook = new Discord.WebhookClient(webhookURL[5], webhookURL[6]); //Discord Webhookの初期化
 const misskey_token = _config.data.misskey_token; // misskeyのトークン
 const misskey_api_address = _config.data.misskey_api_address;
+const misskey_hashtag = _config.data.misskey_hashtag;
+const miisskey_note = _config.data.miisskey_note;
 
 // 録画結果を返却
 async function getRecorded(recordedId: number) {
@@ -71,7 +73,7 @@ async function sendMessage(client_type: string, arg: string) {
         logger.debug('before dropcheck');
         const res = await dropCheck(_recordedid);
         logger.info('DropCheck:'+res);
-        end = 'Error:'+res[0]+' Drop:'+res[1]+' Scrmbling:'+res[2]
+        end = '\nError:'+res[0]+' Drop:'+res[1]+' Scrmbling:'+res[2]
     }
     switch (client_type) {
         case 'discord':
@@ -89,7 +91,7 @@ async function sendMessage(client_type: string, arg: string) {
             logger.info(msg);
             await axios.post(`${misskey_api_address}notes/create`,{
                 i: misskey_token,
-                visibility: String(_config.data.miisskey_note),
+                visibility: String(miisskey_note),
                 visibleUserIds: [],
                 text: msg,
                 localOnly: false,
@@ -173,21 +175,22 @@ async function select_discord_Message(check: string) {
 
 /*************  Discord送信用メッセージの定義 ************/
 /*************  Misskey送信用メッセージの定義 ************/
-const start_misskey = ':rec: 録画開始 **' + _title + '**\n' + _startAt + '～' + _endAt + '［' + _channel + '］\n\n' + String(_config.data.miisskey_hashtag);
+const start_misskey = ':rec: 録画開始 **' + _title + '**\n' + _startAt + '～' + _endAt + '［' + _channel + '］\n\n';
 // const reserve_misskey = '✅ 予約追加 **' + _title + '** \n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］ \n'+ _description + '\n';
 // const update_misskey = ':large_orange_diamond: 録画予約更新 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
 // const deleted_misskey = ':wastebasket: 録画予約削除 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
 // const prestart_misskey = ':briefcase: 録画実行準備 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
 // const prepfailed_misskey = ':warning: 録画実行準備に失敗 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
-const recfailed_misskey = '⚠️ 録画失敗 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '\n\n' + String(_config.data.miisskey_hashtag);
-const end_misskey = '⏹ 録画終了 ' + ' **' + _title + '**\n' + _startAt + '～' + _endAt + '［' + _channel + '］\n\n' + String(_config.data.miisskey_hashtag);
+const recfailed_misskey = '⚠️ 録画失敗 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '\n\n';
+const end_misskey = '⏹ 録画終了 ' + ' **' + _title + '**\n' + _startAt + '～' + _endAt + '［' + _channel + '］\n\n';
 
 async function select_misskey_Message(check: string) {
     let msg: string = '';
-    
+    logger.info("hashtag:" + misskey_hashtag);
     switch (check) {
         case 'start':
             msg = start_misskey;
+            msg += String(misskey_hashtag);
             break;
         
         case 'reserve':
@@ -212,10 +215,12 @@ async function select_misskey_Message(check: string) {
         
         case 'recfailed':
             msg = recfailed_misskey;
+            msg += String(misskey_hashtag);
             break;
         
         case 'end':
             msg = end_misskey;
+            msg += String(misskey_hashtag);
             break;
         
         default:
