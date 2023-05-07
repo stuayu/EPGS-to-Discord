@@ -57,12 +57,12 @@ Windowsの場合(C:\TV に nodejs をインストールした場合)
 EPGStationの `config.yml`を変更
 例)
 ```
-reserveNewAddtionCommand: 'C:\Windows\System32\cmd.exe /C node C:\DTV\EPGS-to-Discord\index.js reserve'
-recordingStartCommand: 'C:\Windows\System32\cmd.exe /C node C:\DTV\EPGS-to-Discord\index.js start'
-recordingFinishCommand: 'C:\Windows\System32\cmd.exe /C node C:\DTV\EPGS-to-Discord\index.js end'
-recordingPreStartCommand: 'C:\Windows\System32\cmd.exe /C node C:\DTV\EPGS-to-Discord\index.js prestart'
-recordingPrepRecFailedCommand: 'C:\Windows\System32\cmd.exe /C node C:\DTV\EPGS-to-Discord\index.js prepfailed'
-recordingFailedCommand: 'C:\Windows\System32\cmd.exe /C node C:\DTV\EPGS-to-Discord\index.js recfailed'
+reserveNewAddtionCommand: 'C:\Windows\System32\cmd.exe /C node C:\DTV\EPGS-to-Discord\dist\index.js reserve'
+recordingStartCommand: 'C:\Windows\System32\cmd.exe /C node C:\DTV\EPGS-to-Discord\dist\index.js start'
+recordingFinishCommand: 'C:\Windows\System32\cmd.exe /C node C:\DTV\EPGS-to-Discord\dist\index.js end'
+recordingPreStartCommand: 'C:\Windows\System32\cmd.exe /C node C:\DTV\EPGS-to-Discord\dist\index.js prestart'
+recordingPrepRecFailedCommand: 'C:\Windows\System32\cmd.exe /C node C:\DTV\EPGS-to-Discord\dist\index.js prepfailed'
+recordingFailedCommand: 'C:\Windows\System32\cmd.exe /C node C:\DTV\EPGS-to-Discord\dist\index.js recfailed'
 ```
   
 # Demo
