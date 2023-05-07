@@ -1,12 +1,12 @@
 data:
-    epgstation_url: "http://localhost:8888/"  #必須
+    epgstation_url: "http://localhost:8888/"
     use_client:
-        # 使わないものは # でコメントアウトしてください
+        # 使わないものは削除してください
         - discord
-        #- misskey
+        - misskey
     discord_webhookURL: ""
-    misskey_api_address: "https://misskey.io/api/" # APIまでのパス
+    misskey_instance: "https://misskey.io"
     misskey_token: ""
     # public home followers 投稿するノートの閲覧範囲
-    miisskey_note: public  #必須
-    misskey_hashtag: '#録画' #投稿時に追加したいタグや文字列
+    miisskey_note: public
+    misskey_hashtag: '#録画鯖 #EPGStation'
