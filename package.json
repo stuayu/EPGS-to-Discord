@@ -4,8 +4,9 @@
   "description": "Post information of EPGStation to Discord channel.",
   "main": "index.js",
   "scripts": {
-    "build": "tsc --build",
-    "clean": "tsc --build --clean",
+    "build": "tsc --build src/",
+    "clean": "tsc --build --clean src/",
+    "eslint": "eslint ./src --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,10 +24,21 @@
     "discord.js": "^11.3.2",
     "js-yaml": "^4.1.0",
     "log4js": "^6.9.1",
+    "misskey-js": "^0.0.15",
     "typescript": "^5.0.4"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.5",
-    "@types/node": "^18.16.3"
+    "@types/node": "^18.16.3",
+    "@typescript-eslint/eslint-plugin": "^5.59.2",
+    "@typescript-eslint/parser": "^5.59.2",
+    "eslint": "^8.40.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-import-resolver-typescript": "^3.5.5",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^2.8.8",
+    "ts-node": "^10.9.1"
   }
 }

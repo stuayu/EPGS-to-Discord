@@ -1,108 +1,227 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 // 必要モジュールの読み込み
-const request   = require('request')
-const exec      = require('child_process').execFile
-const fs        = require('fs')
-const path      = require('path')
-const iconv     = require('iconv-lite')
-const Discord   = require('discord.js')
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const discord_js_1 = __importDefault(require("discord.js"));
+const axios_1 = __importDefault(require("axios"));
+const js_yaml_1 = __importDefault(require("js-yaml"));
 // EPGStationより渡される環境変数を定数に代入
-const _nowDate = new Date();
-const _channel = process.env.CHANNELNAME
-const _title = process.env.NAME
-const _description = process.env.DESCRIPTION
-const _programid = process.env.PROGRAMID
-const _recordedid = process.env.RECORDEDID
-const _date = new Date(Number(process.env.STARTAT)).toLocaleDateString("japanese", {year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'long'})
-const _startAt = new Date(Number(process.env.STARTAT)).toLocaleTimeString("japanese")
-const _endAt = new Date(Number(process.env.ENDAT)).toLocaleTimeString("japanese")
-const _Path = process.env.RECPATH // 録画ファイルの保存フォルダを指定
-
+// const _nowDate = new Date();
+const _channel = process.env.CHANNELNAME;
+const _title = process.env.NAME;
+const _description = process.env.DESCRIPTION;
+// const _programid = process.env.PROGRAMID
+const _recordedid = Number(process.env.RECORDEDID);
+const _date = new Date(Number(process.env.STARTAT)).toLocaleDateString("japanese", { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'long' });
+const _startAt = new Date(Number(process.env.STARTAT)).toLocaleTimeString("japanese");
+const _endAt = new Date(Number(process.env.ENDAT)).toLocaleTimeString("japanese");
+// const _Path = process.env.RECPATH // 録画ファイルの保存フォルダを指定
+const log4js_1 = require("log4js");
+(0, log4js_1.configure)({
+    appenders: {
+        console: {
+            type: 'console',
+        },
+        logfile: { type: 'fileSync', filename: './logs/post_message.log' },
+    },
+    categories: {
+        default: { appenders: ['console', 'logfile'], level: 'info' },
+    },
+});
+const logger = (0, log4js_1.getLogger)();
+logger.level = 'info';
 // コンフィグファイルの読み込み
-var _config;
+let _config;
 try {
-    _config = JSON.parse(fs.readFileSync(path.join(__dirname, "config.json"), "utf8"))
-} catch (e) {
-    console.error("config.json not found!")
-    process.exit()
+    _config = js_yaml_1.default.load(fs_1.default.readFileSync(path_1.default.join(__dirname, "config.yaml"), "utf8"));
 }
-const M_host = _config.mirakurun_host // Mirakurunの動作するホストアドレス
-const E_host = _config.epgstation_host // EPGStationの動作するホストアドレス
-const M_hostName = "http://"+M_host 
-const E_hostName = !_config.basicId ? "http://"+E_host : "http://"+_config.basicId+':'+_config.basicPass+'@'+E_host //動作ホストのアドレス（BASIC認証対応）
-const webhookURL = _config.webhookURL.split('/') // DiscordのWebhookアドレス
-const webhook = new Discord.WebhookClient(webhookURL[5],webhookURL[6]) //Discord Webhookの初期化
-
-var getRecorded = (recordedId, callback)=>{
-    // 録画IDを用いてEPGStation API経由で録画番組情報を取得する
-    // EPGStation側のポートを変更している場合は 8888 を適宜環境に合わせて変更
-    request.get(E_hostName+"api/recorded/"+recordedId+"?isHalfWidth=true", (err, res, body)=>{
-        !err ? callback(body): callback(err)
-    })
+catch (e) {
+    console.error("config.yaml not found!");
+    process.exit();
 }
-var getProgram = (programlId, callback)=>{
-    // 番組IDを用いてMirakurun API経由で番組情報を取得する
-    // Mirakurun側のポートを変更している場合は 40772 を適宜環境に合わせて変更
-    request.get(M_hostName+"api/programs/"+programlId, (err, res, body)=>{
-        !err ? callback(body): callback(err)
-    })
+const E_hostName = _config.data.epgstation_url; // EPGStationの動作するホストアドレス
+const webhookURL = _config.data.discord_webhookURL.split('/'); // DiscordのWebhookアドレス
+const webhook = new discord_js_1.default.WebhookClient(webhookURL[5], webhookURL[6]); //Discord Webhookの初期化
+const misskey_token = _config.data.misskey_token; // misskeyのトークン
+const misskey_api_address = _config.data.misskey_api_address;
+const misskey_hashtag = _config.data.misskey_hashtag;
+const miisskey_note = _config.data.miisskey_note;
+// 録画結果を返却
+function getRecorded(recordedId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        logger.debug('before getRecorded');
+        const data = yield axios_1.default.get(`${E_hostName}api/recorded/${recordedId.toString()}?isHalfWidth=true`);
+        logger.debug('after getRecorded');
+        return data;
+    });
 }
-var dropCheck = (callback)=>{
-    // ドロップ情報を取得して返す
-    let recInfo = getRecorded(_recordedid, (json)=>{
-        json = JSON.parse(json)
-        try{
-            callback(json.dropLogFile.errorCnt, json.dropLogFile.dropCnt, json.dropLogFile.scramblingCnt)
-        } catch(e) {
-            callback(-1, -1 ,-1)
+// DropCheckの結果を返却
+function dropCheck(recordedId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        logger.debug('before func dropcheck');
+        const droplog = yield getRecorded(recordedId);
+        logger.debug('after func dropcheck');
+        return [droplog.data.dropLogFile.errorCnt, droplog.data.dropLogFile.dropCnt, droplog.data.dropLogFile.scramblingCnt];
+    });
+}
+function sendMessage(client_type, arg) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let msg;
+        let end = '';
+        if (arg == 'end') {
+            logger.debug('before dropcheck');
+            const res = yield dropCheck(_recordedid);
+            logger.info('DropCheck:' + res);
+            end = '\nError:' + res[0] + ' Drop:' + res[1] + ' Scrmbling:' + res[2];
         }
-    })
-}
-
-var postMessage = (message)=>{
-    webhook.send(message) // WebHookでmessageを送信するだけ
-}
-
-if(process.argv[2] === 'start'){
-    // 録画開始時に投稿するメッセージ
-    postMessage(':red_circle: 録画開始 __**'+_title+'**__\n```'+_startAt+'～'+_endAt+'［'+_channel+'］```')
-}
-else if(process.argv[2] === 'end'){
-    // 録画終了時に投稿するメッセージ
-    mes = ":white_large_square: 録画終了 " + ' __**' + _title + '**__\n```' + _startAt + '～' + _endAt + '［' + _channel + '］\n'
-    dropCheck((err, drop, scr)=>{
-        if(err==-1) mes += "!===== Cannot load recorded file! =====!```" // 実行結果がnullの場合
-        else if(err!=0){
-            // 映像PIDのd値（ドロップ値）が0でない場合≒ドロップがある場合は詳細を投稿（メンション付き）
-            mes += "!===== This MPEG-TS has dropped frame! =====!\n"
-            mes += 'Error:     '+err+'\nDrop:      '+drop+'\nScrmbling: '+scr+'```\@everyone'
-        } else {
-            // 映像PIDのd値が0の場合はドロップがないのでその旨を投稿
-            mes += "!===== This MPEG-TS has no drop =====!```"
+        switch (client_type) {
+            case 'discord':
+                msg = yield select_discord_Message(arg);
+                msg += end;
+                webhook.send(msg);
+                break;
+            case 'misskey':
+                msg = yield select_misskey_Message(arg);
+                msg += end;
+                if (msg == '') {
+                    break;
+                }
+                logger.info(msg);
+                yield axios_1.default.post(`${misskey_api_address}notes/create`, {
+                    i: misskey_token,
+                    visibility: String(miisskey_note),
+                    visibleUserIds: [],
+                    text: msg,
+                    localOnly: false,
+                    noExtractMentions: false,
+                    noExtractHashtags: false,
+                    noExtractEmojis: false,
+                });
+                break;
+            default:
+                msg = "";
+                break;
         }
-        postMessage(mes)
-    })
+    });
 }
-else if(process.argv[2] === 'reserve'){
-    // 録画予約時に投稿するメッセージ
-    postMessage(':white_check_mark: 予約追加 __**'+_title+'**__\n```'+_date+' '+_startAt+'～'+_endAt+'［'+_channel+'］\n'+_description+'```')
+function main(arg) {
+    return __awaiter(this, void 0, void 0, function* () {
+        logger.info('arg:' + arg);
+        if (arg != null) {
+            for (let val of _config.data.use_client) {
+                logger.info(val);
+                yield sendMessage(val, arg);
+            }
+        }
+    });
 }
-else if(process.argv[2] === 'update') {
-    // 録画予約の更新時に投稿するメッセージ
-    postMessage(':large_orange_diamond: 録画予約更新 __**'+_title+'**__\n```'+_date+' '+_startAt+'～'+_endAt+'［'+_channel+'］\n'+_description+'```')
+/*************  Discord送信用メッセージの定義 ************/
+const start_discord = ':red_circle: 録画開始 __**' + _title + '**__\n```' + _startAt + '～' + _endAt + '［' + _channel + '］```';
+const reserve_discord = ':white_check_mark: 予約追加 __**' + _title + '**__\n```' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '```';
+const update_discord = ':large_orange_diamond: 録画予約更新 __**' + _title + '**__\n```' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '```';
+const deleted_discord = ':wastebasket: 録画予約削除 __**' + _title + '**__\n```' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '```';
+const prestart_discord = ':briefcase: 録画実行準備 __**' + _title + '**__\n```' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '```';
+const prepfailed_discord = ':warning: 録画実行準備に失敗 __**' + _title + '**__\n```' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '```\n@everyone';
+const recfailed_discord = ':warning: 録画失敗 __**' + _title + '**__\n```' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '```\n@everyone';
+const end_discord = ':white_large_square: 録画終了 ' + ' __**' + _title + '**__\n```' + _startAt + '～' + _endAt + '［' + _channel + '］```';
+function select_discord_Message(check) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let msg;
+        logger.info(check);
+        switch (check) {
+            case 'start':
+                msg = start_discord;
+                break;
+            case 'reserve':
+                msg = reserve_discord;
+                break;
+            case 'update':
+                msg = update_discord;
+                break;
+            case 'deleted':
+                msg = deleted_discord;
+                break;
+            case 'prestart':
+                msg = prestart_discord;
+                break;
+            case 'prepfailed':
+                msg = prepfailed_discord;
+                break;
+            case 'recfailed':
+                msg = recfailed_discord;
+                break;
+            case 'end':
+                msg = end_discord;
+                break;
+            default:
+                msg = "";
+                break;
+        }
+        return msg;
+    });
 }
-else if (process.argv[2] === 'deleted') {
-    // 録画予約の削除時に投稿するメッセージ
-    postMessage(':wastebasket: 録画予約削除 __**'+_title+'**__\n```'+_date+' '+_startAt+'～'+_endAt+'［'+_channel+'］\n'+_description+'```')
+/*************  Discord送信用メッセージの定義 ************/
+/*************  Misskey送信用メッセージの定義 ************/
+const start_misskey = ':rec: 録画開始 **' + _title + '**\n' + _startAt + '～' + _endAt + '［' + _channel + '］\n\n';
+// const reserve_misskey = '✅ 予約追加 **' + _title + '** \n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］ \n'+ _description + '\n';
+// const update_misskey = ':large_orange_diamond: 録画予約更新 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
+// const deleted_misskey = ':wastebasket: 録画予約削除 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
+// const prestart_misskey = ':briefcase: 録画実行準備 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
+// const prepfailed_misskey = ':warning: 録画実行準備に失敗 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '';
+const recfailed_misskey = '⚠️ 録画失敗 **' + _title + '**\n' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '\n\n';
+const end_misskey = '⏹ 録画終了 ' + ' **' + _title + '**\n' + _startAt + '～' + _endAt + '［' + _channel + '］\n\n';
+function select_misskey_Message(check) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let msg = '';
+        logger.info("hashtag:" + misskey_hashtag);
+        switch (check) {
+            case 'start':
+                msg = start_misskey;
+                msg += String(misskey_hashtag);
+                break;
+            case 'reserve':
+                // msg = reserve_misskey;
+                break;
+            case 'update':
+                // msg = update_misskey;
+                break;
+            case 'deleted':
+                // msg = deleted_misskey;
+                break;
+            case 'prestart':
+                // msg = prestart_misskey;
+                break;
+            case 'prepfailed':
+                // msg = prepfailed_misskey;
+                break;
+            case 'recfailed':
+                msg = recfailed_misskey;
+                msg += String(misskey_hashtag);
+                break;
+            case 'end':
+                msg = end_misskey;
+                msg += String(misskey_hashtag);
+                break;
+            default:
+                msg = "";
+                break;
+        }
+        return msg;
+    });
 }
-else if (process.argv[2] === 'prestart') {
-    // 録画実行準備の開始時に投稿するメッセージ
-    postMessage(':briefcase: 録画実行準備 __**'+_title+'**__\n```'+_date+' '+_startAt+'～'+_endAt+'［'+_channel+'］\n'+_description+'```')
-}
-else if (process.argv[2] === 'prepfailed') {
-    // 録画実行準備に失敗した時に投稿するメッセージ
-    postMessage(':warning: 録画実行準備に失敗 __**' + _title + '**__\n```' + _date + ' ' + _startAt + '～' + _endAt + '［' + _channel + '］\n' + _description + '```\録画実行準備に失敗しました．\@everyone')
-}
-else if (process.argv[2] === 'recfailed') {
-    // 録画実行に失敗した時に投稿するメッセージ
-    postMessage(':warning: 録画失敗 __**'+_title+'**__\n```'+_date+' '+_startAt+'～'+_endAt+'［'+_channel+'］\n'+_description+'```\録画実行に失敗しました．\@everyone')
-}
+/*************  Misskey送信用メッセージの定義 ************/
+main(process.argv[2]);
+//# sourceMappingURL=index.js.map

@@ -1,6 +1,7 @@
-node_modules/*
+node_modules
 config.json
 tsselect.exe
 tsselect
 dropcheck.log
 *.yaml
+check.ts
