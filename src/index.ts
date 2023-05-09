@@ -20,17 +20,34 @@ async function dropCheck(recordedId: number) {
     return [droplog.data.dropLogFile.errorCnt, droplog.data.dropLogFile.dropCnt, droplog.data.dropLogFile.scramblingCnt, droplog.data.videoFiles[0].size, droplog.data.dropLogFile.id];
 }
 
-// TSファイルのサイズ計算
+async function storageCheck() {
+    const storage = await axios.get(`${config.epgstationUrl}api/storages`);
+    const res = [];
+    for (const i of storage.data.items) {
+        //console.log(i.available);
+        //console.log(await calcSize(i.available));
+        const available = await calcSize(i.available);
+        const total = await calcSize(i.total);
+        res.push(i.name + ': ' + available + '/' + total);
+    }
+    return res
+}
+
+// サイズ計算
 async function calcSize(byte: number) {
     logger.debug(byte);
     const kb = 1024;
     const mb = Math.pow(kb, 2);
     const gb = Math.pow(kb, 3);
+    const tb = Math.pow(kb, 4);
 
-    let target = null;
+    let target = 0;
     let unit = 'byte';
 
-    if (byte >= gb) {
+    if (byte >= tb) {
+        target = tb;
+        unit = 'TB';
+    } else if (byte >= gb) {
         target = gb;
         unit = 'GB';
     } else if (byte >= mb) {
@@ -40,7 +57,7 @@ async function calcSize(byte: number) {
         target = kb;
         unit = 'KB';
     }
-    const res = target !== null ? Math.floor((byte / target) * 100) / 100 : byte
+    const res = Math.floor((byte / target) * 100) / 100;
     logger.debug(res);
     return String(res) + unit;
 }
@@ -53,13 +70,25 @@ async function getDropLog(id:number) {
 async function sendMessage(client_type: string, arg: string) {
     let msg: string;
     let end = '';
-    if (arg == 'end') {
-        logger.debug('before dropcheck');
-        const res = await dropCheck(config.recordedId);
-        logger.info('DropCheck:' + res);
-        
-        end = '\nError:' + res[0] + ' Drop:' + res[1] + ' Scrmbling:' + res[2] + '\nTS:' + await calcSize(res[3]) + '\n\n<small>' + await getDropLog(res[4]) + '</small>'
+    switch (arg) {
+        case 'start':
+            end = '\n残りの空き容量: ';
+            for (const i of await storageCheck()) {
+                end += i + ', ';
+            }
+            break;
+        case 'end': {
+            logger.debug('before dropcheck');
+            const res = await dropCheck(config.recordedId);
+            logger.info('DropCheck:' + res);
+            end = '\nError:' + res[0] + ' Drop:' + res[1] + ' Scrmbling:' + res[2] + '\nTS:' + await calcSize(res[3]) + '\n\n<small>' + await getDropLog(res[4]) + '</small>'
+            
+            break;
+        }
+        default:
+            break;
     }
+
     switch (client_type) {
         case 'discord':
             msg = await selectDiscordMessage(arg);

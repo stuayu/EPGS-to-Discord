@@ -51,9 +51,9 @@ class Config {
         this.title = String(process.env.NAME);
         this.description = String(process.env.DESCRIPTION);
         this.recordedId = Number(process.env.RECORDEDID);
-        this.date = new Date(Number(process.env.STARTAT)).toLocaleDateString("japanese", { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'long' });
-        this.startAt = new Date(Number(process.env.STARTAT)).toLocaleTimeString("japanese");
-        this.endAt = new Date(Number(process.env.ENDAT)).toLocaleTimeString("japanese");
+        this.date = new Date(Number(process.env.STARTAT)).toLocaleDateString("japanese", { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' }); // 2023/05/09(火)
+        this.startAt = new Date(Number(process.env.STARTAT)).toLocaleTimeString("japanese", { hour: '2-digit', minute: '2-digit' }); // 00:00
+        this.endAt = new Date(Number(process.env.ENDAT)).toLocaleTimeString("japanese", { hour: '2-digit', minute: '2-digit' }); // 00:00
     }
 }
 // ログの設定
@@ -73,7 +73,7 @@ const logOptions = {
     categories: {
         default: {
             appenders: ['console', 'logfile'],
-            level: 'debug',
+            level: 'info',
         },
     },
 };

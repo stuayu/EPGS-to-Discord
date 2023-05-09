@@ -35,16 +35,35 @@ function dropCheck(recordedId) {
         return [droplog.data.dropLogFile.errorCnt, droplog.data.dropLogFile.dropCnt, droplog.data.dropLogFile.scramblingCnt, droplog.data.videoFiles[0].size, droplog.data.dropLogFile.id];
     });
 }
-// TSファイルのサイズ計算
+function storageCheck() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const storage = yield axios_1.default.get(`${config_1.config.epgstationUrl}api/storages`);
+        const res = [];
+        for (const i of storage.data.items) {
+            //console.log(i.available);
+            //console.log(await calcSize(i.available));
+            const available = yield calcSize(i.available);
+            const total = yield calcSize(i.total);
+            res.push(i.name + ': ' + available + '/' + total);
+        }
+        return res;
+    });
+}
+// サイズ計算
 function calcSize(byte) {
     return __awaiter(this, void 0, void 0, function* () {
         config_1.logger.debug(byte);
         const kb = 1024;
         const mb = Math.pow(kb, 2);
         const gb = Math.pow(kb, 3);
-        let target = null;
+        const tb = Math.pow(kb, 4);
+        let target = 0;
         let unit = 'byte';
-        if (byte >= gb) {
+        if (byte >= tb) {
+            target = tb;
+            unit = 'TB';
+        }
+        else if (byte >= gb) {
             target = gb;
             unit = 'GB';
         }
@@ -56,7 +75,7 @@ function calcSize(byte) {
             target = kb;
             unit = 'KB';
         }
-        const res = target !== null ? Math.floor((byte / target) * 100) / 100 : byte;
+        const res = Math.floor((byte / target) * 100) / 100;
         config_1.logger.debug(res);
         return String(res) + unit;
     });
@@ -71,11 +90,22 @@ function sendMessage(client_type, arg) {
     return __awaiter(this, void 0, void 0, function* () {
         let msg;
         let end = '';
-        if (arg == 'end') {
-            config_1.logger.debug('before dropcheck');
-            const res = yield dropCheck(config_1.config.recordedId);
-            config_1.logger.info('DropCheck:' + res);
-            end = '\nError:' + res[0] + ' Drop:' + res[1] + ' Scrmbling:' + res[2] + '\nTS:' + (yield calcSize(res[3])) + '\n\n<small>' + (yield getDropLog(res[4])) + '</small>';
+        switch (arg) {
+            case 'start':
+                end = '\n残りの空き容量: ';
+                for (const i of yield storageCheck()) {
+                    end += i + ', ';
+                }
+                break;
+            case 'end': {
+                config_1.logger.debug('before dropcheck');
+                const res = yield dropCheck(config_1.config.recordedId);
+                config_1.logger.info('DropCheck:' + res);
+                end = '\nError:' + res[0] + ' Drop:' + res[1] + ' Scrmbling:' + res[2] + '\nTS:' + (yield calcSize(res[3])) + '\n\n<small>' + (yield getDropLog(res[4])) + '</small>';
+                break;
+            }
+            default:
+                break;
         }
         switch (client_type) {
             case 'discord':
