@@ -1,7 +1,7 @@
 data:
     epgstation_url: "http://localhost:8888/"
     use_client:
-        # 使わないものは削除してください
+        # 使わないものは # で削除してください
         - discord
         - misskey
     discord_webhookURL: ""
@@ -9,4 +9,40 @@ data:
     misskey_token: ""
     # public home followers 投稿するノートの閲覧範囲
     miisskey_note: public
-    misskey_hashtag: '#録画鯖 #EPGStation'
+    hashtag: '#録画鯖 #EPGStation'
+    # マクロ一覧
+    # $TITLE$ : 番組タイトル
+    # $DATE$ : 日付
+    # $START_TIME$ : 開始時刻
+    # $END_TIME$ : 終了時刻
+    # $CHANNEL$ : チャンネル名
+    # $DESCRIPTION$ : 番組内容
+    # $HASHTAG$ : ハッシュタグ
+    # $ERROR$ : エラーカウント数
+    # $DROP$ : ドロップカウント数
+    # $SCRMBLE$ : スクランブルカウント数
+    # $TS_FILE_SIZE$ : TSファイルサイズ(??.??GBなど)
+    # $ALL_DROPLOG$ : ドロップログの詳細情報
+    # $DISKSIZE$ : 録画ファイル保存先のディスクサイズ(録画開始/録画終了/録画中エラーのみ)
+    # $TVTAG$ : 局タグを追加する (channelid.tsに依存します)
+    # 通知させたくない箇所があれば # でコメントアウトしてください(以下通知フォーマット例)
+
+message:
+    discord:
+        start: ':red_circle: 録画開始 __**$TITLE$**__\n```$DATE$ $START_TIME$～$END_TIME$［$CHANNEL$］\n$DESCRIPTION$\n$HASHTAG$ ドライブ$DISKSIZE$ $TVTAG$```'
+        reserve: ':white_check_mark: 予約追加 __**$TITLE$**__\n```$DATE$ $START_TIME$～$END_TIME$［$CHANNEL$］\n$DESCRIPTION$```'
+        update: ':large_orange_diamond: 録画予約更新 __**$TITLE$**__\n```$DATE$ $START_TIME$～$END_TIME$［$CHANNEL$］\n$DESCRIPTION$```'
+        deleted: ':wastebasket: 録画予約削除 __**$TITLE$**__\n```$DATE$ $START_TIME$～$END_TIME$［$CHANNEL$］\n$DESCRIPTION$```'
+        prestart: ':briefcase: 録画実行準備 __**$TITLE$**__\n```$DATE$ $START_TIME$～$END_TIME$［$CHANNEL$］\n$DESCRIPTION$```'
+        prepfailed: ':warning: 録画実行準備に失敗 __**$TITLE$**__\n```$DATE$ $START_TIME$～$END_TIME$［$CHANNEL$］\n$DESCRIPTION$```\n@everyone'
+        recfailed: ':warning: 録画失敗 __**$TITLE$**__\n```$DATE$ $START_TIME$～$END_TIME$［$CHANNEL$］\n$DESCRIPTION$```\n@everyone'
+        end: ':white_large_square: 録画終了  【$CHANNEL$】$TVTAG$\n__**$TITLE$**__\n```$DATE$ $START_TIME$～$END_TIME$\n$HASHTAG$ ドライブ残り$DHISKSIZE$ TS: $TS_FILE_SIZE$\n Error: $ERROR$ Drop: $DROP$ Scrmble: $SCRMBLE$```'
+    misskey:
+        start: ':rec: 録画開始 【$CHANNEL$】$TVTAG$\n**$TITLE$**\n$DATE$ $START_TIME$～$END_TIME$\n$HASHTAG$\n<small>$DESCRIPTION$</small>'
+        reserve: ':_plus: 予約追加 【$CHANNEL$】$TVTAG$\n**$TITLE$**\n$DATE$ $START_TIME$～$END_TIME$\n$HASHTAG$\n<small>$DESCRIPTION$</small>'
+        update: '🆙 録画予約更新 【$CHANNEL$】$TVTAG$\n**$TITLE$**\n$DATE$ $START_TIME$～$END_TIME$\n$HASHTAG$\n<small>$DESCRIPTION$</small>'
+        #deleted: ':wastebasket: 録画予約削除 【$CHANNEL$】$TVTAG$\n**$TITLE$**\n$DATE$ $START_TIME$～$END_TIME$\n$HASHTAG$\n<small>$DESCRIPTION$</small>'
+        #prestart: ':briefcase: 録画実行準備 【$CHANNEL$】$TVTAG$\n**$TITLE$**\n$DATE$ $START_TIME$～$END_TIME$\n$HASHTAG$\n<small>$DESCRIPTION$</small>'
+        #prepfailed: ':warning: 録画実行準備に失敗 【$CHANNEL$】$TVTAG$\n**$TITLE$**\n$DATE$ $START_TIME$～$END_TIME$\n$HASHTAG$\n<small>$DESCRIPTION$</small>'
+        recfailed: '⚠️ 録画失敗 【$CHANNEL$】$TVTAG$\n**$TITLE$**\n$DATE$ $START_TIME$～$END_TIME$\n$HASHTAG$ ドライブ残り$DHISKSIZE$ \n<small>$DESCRIPTION$</small>'
+        end: '⏹ 録画終了  【$CHANNEL$】$TVTAG$\n**$TITLE$**\n$DATE$ $START_TIME$～$END_TIME$\n$HASHTAG$ ドライブ残り$DHISKSIZE$ TS: $TS_FILE_SIZE$\n Error: $ERROR$ Drop: $DROP$ Scrmble: $SCRMBLE$'

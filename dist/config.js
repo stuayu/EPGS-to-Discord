@@ -36,17 +36,17 @@ const Misskey = __importStar(require("misskey-js"));
 const log4js_1 = require("log4js");
 class Config {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(configData) {
-        this.epgstationUrl = configData.epgstation_url;
-        exports.logger.debug(configData.use_client);
-        this.client = configData.use_client;
-        this.webhookUrl = String(configData.discord_webhookURL).split('/');
+    constructor(config) {
+        this.epgstationUrl = config.data.epgstation_url;
+        exports.logger.debug(config.data.use_client);
+        this.client = config.data.use_client;
+        this.webhookUrl = String(config.data.discord_webhookURL).split('/');
         const [, , , , , id, token] = this.webhookUrl;
         this.webhook = new discord_js_1.default.WebhookClient(id, token);
-        this.misskeyInstanceUrl = configData.misskey_instance;
-        this.misskeyApiKey = configData.misskey_token;
-        this.misskeyHashtag = configData.misskey_hashtag;
-        this.misskeyVisible = configData.miisskey_note;
+        this.misskeyInstanceUrl = config.data.misskey_instance;
+        this.misskeyApiKey = config.data.misskey_token;
+        this.Hashtag = config.data.hashtag;
+        this.misskeyVisible = config.data.miisskey_note;
         this.channel = String(process.env.CHANNELNAME);
         this.title = String(process.env.NAME);
         this.description = String(process.env.DESCRIPTION);
@@ -54,6 +54,24 @@ class Config {
         this.date = new Date(Number(process.env.STARTAT)).toLocaleDateString("japanese", { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' }); // 2023/05/09(火)
         this.startAt = new Date(Number(process.env.STARTAT)).toLocaleTimeString("japanese", { hour: '2-digit', minute: '2-digit' }); // 00:00
         this.endAt = new Date(Number(process.env.ENDAT)).toLocaleTimeString("japanese", { hour: '2-digit', minute: '2-digit' }); // 00:00
+        this.recpath = String(process.env.RECPATH) || ''; //録画ファイルのフルパスを取得
+        this.channelid = Number(process.env.CHANNELID); //録画ファイルのフルパスを取得
+        this.discord_start = config.message.discord.start || '';
+        this.discord_reserve = config.message.discord.reserve || '';
+        this.discord_update = config.message.discord.update || '';
+        this.discord_deleted = config.message.discord.deleted || '';
+        this.discord_prestart = config.message.discord.prestart || '';
+        this.discord_prepfailed = config.message.discord.prepfailed || '';
+        this.discord_recfailed = config.message.discord.recfailed || '';
+        this.discord_end = config.message.discord.end || '';
+        this.misskey_start = config.message.misskey.start || '';
+        this.misskey_reserve = config.message.misskey.reserve || '';
+        this.misskey_update = config.message.misskey.update || '';
+        this.misskey_deleted = config.message.misskey.deleted || '';
+        this.misskey_prestart = config.message.misskey.prestart || '';
+        this.misskey_prepfailed = config.message.misskey.prepfailed || '';
+        this.misskey_recfailed = config.message.misskey.recfailed || '';
+        this.misskey_end = config.message.misskey.end || '';
     }
 }
 // ログの設定
@@ -88,7 +106,7 @@ try {
 catch (e) {
     exports.logger.error("config.yaml not found!");
 }
-exports.config = new Config(configData.data);
+exports.config = new Config(configData);
 // Misskey API初期化
 exports.client = new Misskey.api.APIClient({ origin: exports.config.misskeyInstanceUrl, credential: exports.config.misskeyApiKey });
 //# sourceMappingURL=config.js.map
